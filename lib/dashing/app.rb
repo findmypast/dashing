@@ -67,7 +67,12 @@ get '/' do
   dashboard = settings.default_dashboard || first_dashboard
   raise Exception.new('There are no dashboards available') if not dashboard
 
-  redirect "/" + dashboard
+  tilt_html_engines.each do |suffix, _|
+    file = File.join(settings.views, "#{dashboard}.#{suffix}")
+    return render(suffix.to_sym, dashboard.to_sym) if File.exist? file
+  end
+
+  halt 404
 end
 
 get '/events', provides: 'text/event-stream' do
